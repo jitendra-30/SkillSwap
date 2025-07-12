@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-5 text-center mb-4">
+                <i class="fas fa-trophy text-warning me-2"></i>
+                Leaderboard
+            </h1>
+            <p class="lead text-center mb-5">Top-rated members in our skill swap community</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {% if users %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>User</th>
+                                        <th>Skills Offered</th>
+                                        <th>Rating</th>
+                                        <th>Completed Swaps</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ loop.index }}</strong>
+                                            {% if loop.index == 1 %}
+                                                <i class="fas fa-crown text-warning ms-1"></i>
+                                            {% elif loop.index == 2 %}
+                                                <i class="fas fa-medal text-secondary ms-1"></i>
+                                            {% elif loop.index == 3 %}
+                                                <i class="fas fa-medal text-warning ms-1"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle me-3">
+                                                    {{ user.full_name[:2].upper() }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ user.full_name }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">@{{ user.username }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="skills-container">
+                                                {% for skill in user.get_skills_offered_list()[:3] %}
+                                                    <span class="badge bg-primary me-1">{{ skill }}</span>
+                                                {% endfor %}
+                                                {% if user.get_skills_offered_list()|length > 3 %}
+                                                    <span class="badge bg-light text-dark">+{{ user.get_skills_offered_list()|length - 3 }} more</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="rating-display">
+                                                {% set avg_rating = user.get_average_rating() %}
+                                                {% if avg_rating > 0 %}
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="stars me-2">
+                                                            {% for i in range(1, 6) %}
+                                                                {% if i <= avg_rating %}
+                                                                    <i class="fas fa-star text-warning"></i>
+                                                                {% else %}
+                                                                    <i class="far fa-star text-muted"></i>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </div>
+                                                        <span class="fw-bold">{{ avg_rating }}</span>
+                                                        <small class="text-muted">({{ user.get_rating_count() }} reviews)</small>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">No ratings yet</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">{{ user.get_completed_swaps_count() }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+                    <h3>No rated users yet</h3>
+                    <p class="text-muted">Complete some skill swaps to see the leaderboard!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

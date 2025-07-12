@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="hero-content">
+                    <h1 class="display-4 fw-bold text-white mb-4">Welcome to Skill Swap</h1>
+                    <p class="lead text-white mb-4">Connect with others to exchange skills and learn together!</p>
+                    {% if not current_user.is_authenticated %}
+                    <div class="hero-actions">
+                        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-3">
+                            <i class="fas fa-user-plus me-2"></i>Sign Up Now
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="hero-search">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Ready to Start Swapping Skills?</h5>
+                            <p class="card-text">Join our community and start learning from others while sharing your expertise.</p>
+                            {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('profile') }}" class="btn btn-primary">View My Profile</a>
+                            {% else %}
+                            <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">All Skill Profiles</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" action="{{ url_for('index') }}">
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" name="search" 
+                                       placeholder="Search skills..." value="{{ search_query }}">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                        {% if users %}
+                        <div class="text-center">
+                            <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">{{ users|length }} profile(s) found</p>
+                        </div>
+                        {% else %}
+                        <div class="text-center">
+                            <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No profiles found</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if current_user.is_authenticated %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ url_for('profile') }}" class="btn btn-outline-primary btn-sm d-block mb-2">
+                            <i class="fas fa-user me-1"></i>My Profile
+                        </a>
+                        <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm d-block mb-2">
+                            <i class="fas fa-edit me-1"></i>Edit Profile
+                        </a>
+                        <a href="{{ url_for('swap_requests') }}" class="btn btn-outline-primary btn-sm d-block">
+                            <i class="fas fa-exchange-alt me-1"></i>Swap Requests
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Popular Skills</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-1">
+                            <span class="badge bg-secondary">Python</span>
+                            <span class="badge bg-secondary">JavaScript</span>
+                            <span class="badge bg-secondary">Guitar</span>
+                            <span class="badge bg-secondary">Photography</span>
+                            <span class="badge bg-secondary">Cooking</span>
+                            <span class="badge bg-secondary">Spanish</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            {% if users %}
+            <div class="profiles-list">
+                {% for user in users %}
+                <div class="profile-list-item mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-2 text-center">
+                                    <div class="profile-avatar-container">
+                                        <i class="fas fa-user-circle fa-4x text-primary mb-2"></i>
+                                        <span class="badge bg-success d-block">
+                                            <i class="fas fa-check-circle me-1"></i>Active
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    <div class="profile-info">
+                                        <h5 class="card-title mb-1">{{ user.full_name }}</h5>
+                                        <p class="text-muted small mb-2">@{{ user.username }}</p>
+
+                                        <!-- Skills directly under username -->
+                                        <div class="profile-skills-preview mb-2">
+                                            {% if user.skills_offered %}
+                                            <div class="mb-1">
+                                                <small class="text-primary fw-bold">Offers:</small>
+                                                {% for skill in user.get_skills_offered_list()[:3] %}
+                                                <span class="badge bg-primary me-1" style="font-size: 0.7rem;">{{ skill }}</span>
+                                                {% endfor %}
+                                                {% if user.get_skills_offered_list()|length > 3 %}
+                                                <span class="badge bg-secondary" style="font-size: 0.7rem;">+{{ user.get_skills_offered_list()|length - 3 }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+
+                                            {% if user.skills_wanted %}
+                                            <div class="mb-1">
+                                                <small class="text-info fw-bold">Wants:</small>
+                                                {% for skill in user.get_skills_wanted_list()[:3] %}
+                                                <span class="badge bg-info me-1" style="font-size: 0.7rem;">{{ skill }}</span>
+                                                {% endfor %}
+                                                {% if user.get_skills_wanted_list()|length > 3 %}
+                                                <span class="badge bg-secondary" style="font-size: 0.7rem;">+{{ user.get_skills_wanted_list()|length - 3 }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt me-1"></i>
+                                            Joined {{ user.created_at.strftime('%B %Y') }}
+                                        </small>
+
+                                        <!-- Rating Display -->
+                                        {% set avg_rating = user.get_average_rating() %}
+                                        {% if avg_rating > 0 %}
+                                        <div class="rating-display mt-2">
+                                            <div class="d-flex align-items-center">
+                                                <div class="stars me-2">
+                                                    {% for i in range(1, 6) %}
+                                                        {% if i <= avg_rating %}
+                                                            <i class="fas fa-star text-warning"></i>
+                                                        {% else %}
+                                                            <i class="far fa-star text-muted"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                                <small class="text-muted">{{ avg_rating }} ({{ user.get_rating_count() }} reviews)</small>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if user.availability %}
+                                        <div class="mt-2">
+                                            <h6 class="text-success mb-1">
+                                                <i class="fas fa-clock me-1"></i>Availability
+                                            </h6>
+                                            <p class="small text-muted mb-0">{{ user.availability[:80] }}{% if user.availability|length > 80 %}...{% endif %}</p>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('view_profile', user_id=user.id) }}" class="btn btn-success mb-2">
+                                        <i class="fas fa-handshake me-1"></i>Request
+                                    </a>
+                                    {% else %}
+                                    <a href="{{ url_for('login') }}" class="btn btn-success mb-2">
+                                        <i class="fas fa-handshake me-1"></i>Request
+                                    </a>
+                                    {% endif %}
+                                    {% if current_user.is_authenticated %}
+                                    <div class="profile-stats small text-muted">
+                                        <div><i class="fas fa-graduation-cap me-1"></i>{{ user.get_skills_offered_list()|length }} skills offered</div>
+                                        <div><i class="fas fa-search me-1"></i>{{ user.get_skills_wanted_list()|length }} skills wanted</div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination Controls -->
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Profile pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <!-- Previous Button -->
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('index', page=pagination.prev_num, search=search_query) }}">
+                            <i class="fas fa-chevron-left me-1"></i>Previous
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            <i class="fas fa-chevron-left me-1"></i>Previous
+                        </span>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Page Numbers -->
+                    {% for page_num in pagination.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('index', page=page_num, search=search_query) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Next Button -->
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('index', page=pagination.next_num, search=search_query) }}">
+                            Next<i class="fas fa-chevron-right ms-1"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            Next<i class="fas fa-chevron-right ms-1"></i>
+                        </span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                <h3 class="text-muted">No profiles found</h3>
+                <p class="text-muted">
+                    {% if search_query %}
+                    Try searching for different skills or
+                    <a href="{{ url_for('index') }}">browse all profiles</a>.
+                    {% else %}
+                    Be the first to create a profile and start swapping skills!
+                    {% endif %}
+                </p>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>Create Your Profile
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

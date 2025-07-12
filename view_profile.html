@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.full_name }} - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card profile-main">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user me-2"></i>{{ user.full_name }}'s Profile
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="profile-avatar-large">
+                                <i class="fas fa-user-circle fa-5x text-primary"></i>
+                            </div>
+                            <div class="mt-3">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>Active
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="profile-info">
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Name:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        {{ user.full_name }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Username:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        @{{ user.username }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Email:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        {{ user.email }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Member Since:</strong>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        {{ user.created_at.strftime('%B %d, %Y') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if user.skills_offered %}
+                    <div class="skills-section mb-4">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-graduation-cap me-2"></i>Skills Offered
+                        </h5>
+                        <div class="skills-tags">
+                            {% for skill in user.get_skills_offered_list() %}
+                            <span class="badge bg-primary me-2 mb-2">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if user.skills_wanted %}
+                    <div class="skills-section mb-4">
+                        <h5 class="text-info mb-3">
+                            <i class="fas fa-search me-2"></i>Skills Wanted
+                        </h5>
+                        <div class="skills-tags">
+                            {% for skill in user.get_skills_wanted_list() %}
+                            <span class="badge bg-info me-2 mb-2">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if user.availability %}
+                    <div class="availability-section mb-4">
+                        <h5 class="text-success mb-3">
+                            <i class="fas fa-clock me-2"></i>Availability
+                        </h5>
+                        <p class="text-muted">{{ user.availability }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            {% if current_user.is_authenticated and current_user.id != user.id %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-handshake me-2"></i>Send Swap Request
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('send_request', user_id=user.id) }}">
+                        <div class="mb-3">
+                            <label for="offered_skill" class="form-label">Skill You Offer</label>
+                            <select class="form-control" id="offered_skill" name="offered_skill" required>
+                                <option value="">Select a skill you offer</option>
+                                {% for skill in current_user.get_skills_offered_list() %}
+                                <option value="{{ skill }}">{{ skill }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="requested_skill" class="form-label">Skill You Want</label>
+                            <select class="form-control" id="requested_skill" name="requested_skill" required>
+                                <option value="">Select a skill you want</option>
+                                {% for skill in user.get_skills_offered_list() %}
+                                <option value="{{ skill }}">{{ skill }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Send Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card {% if current_user.is_authenticated and current_user.id != user.id %}mt-4{% endif %}">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Profile Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="stat-item">
+                                <h4 class="text-primary mb-1">{{ user.get_skills_offered_list()|length }}</h4>
+                                <small class="text-muted">Skills Offered</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-item">
+                                <h4 class="text-info mb-1">{{ user.get_skills_wanted_list()|length }}</h4>
+                                <small class="text-muted">Skills Wanted</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            Joined {{ user.created_at.strftime('%B %Y') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            {% if user.skills_offered and user.skills_wanted %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Skill Match
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if current_user.is_authenticated %}
+                    <p class="text-muted small">
+                        Find skills that match between you and {{ user.full_name.split()[0] }}:
+                    </p>
+                    
+                    {% set my_offered = current_user.get_skills_offered_list() %}
+                    {% set their_wanted = user.get_skills_wanted_list() %}
+                    {% set my_wanted = current_user.get_skills_wanted_list() %}
+                    {% set their_offered = user.get_skills_offered_list() %}
+                    
+                    {% set matches = [] %}
+                    {% for skill in my_offered %}
+                        {% if skill in their_wanted %}
+                            {% set _ = matches.append(skill) %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if matches %}
+                    <div class="mb-3">
+                        <strong class="text-success">Perfect Matches:</strong>
+                        <div class="mt-2">
+                            {% for skill in matches %}
+                            <span class="badge bg-success me-1 mb-1">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No direct skill matches found.</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted">
+                        <a href="{{ url_for('login') }}">Login</a> to see skill matches.
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

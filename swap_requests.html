@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Swap Requests - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-exchange-alt me-2"></i>Swap Requests
+                </h2>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Find People to Connect With
+                </a>
+            </div>
+
+            <!-- Request Tabs -->
+            <ul class="nav nav-tabs" id="requestTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="received-tab" data-bs-toggle="tab" 
+                            data-bs-target="#received" type="button" role="tab">
+                        <i class="fas fa-inbox me-2"></i>Received ({{ received_requests|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" 
+                            data-bs-target="#sent" type="button" role="tab">
+                        <i class="fas fa-paper-plane me-2"></i>Sent ({{ sent_requests|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="requestTabsContent">
+                <!-- Received Requests -->
+                <div class="tab-pane fade show active" id="received" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body">
+                            {% if received_requests %}
+                                {% for request in received_requests %}
+                                <div class="request-item {% if not loop.last %}border-bottom{% endif %} pb-3 {% if not loop.first %}pt-3{% endif %}">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-start">
+                                                <div class="me-3">
+                                                    <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">
+                                                        <a href="{{ url_for('view_profile', user_id=request.requester.id) }}" 
+                                                           class="text-decoration-none">
+                                                            {{ request.requester.full_name }}
+                                                        </a>
+                                                        <small class="text-muted">(@{{ request.requester.username }})</small>
+                                                    </h6>
+                                                    <p class="mb-2">
+                                                        <span class="badge bg-primary me-2">{{ request.offered_skill }}</span>
+                                                        <i class="fas fa-exchange-alt text-muted"></i>
+                                                        <span class="badge bg-info ms-2">{{ request.requested_skill }}</span>
+                                                    </p>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        {{ request.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            {% if request.status == 'pending' %}
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('handle_request', request_id=request.id, action='accept') }}" 
+                                                   class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a href="{{ url_for('handle_request', request_id=request.id, action='reject') }}" 
+                                                   class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                                <a href="{{ url_for('handle_request', request_id=request.id, action='delete') }}" 
+                                                   class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                            {% elif request.status == 'accepted' %}
+                                            <div class="btn-group" role="group">
+                                                <span class="badge bg-success me-2">{{ request.status.title() }}</span>
+                                                <a href="{{ url_for('complete_swap', request_id=request.id) }}" 
+                                                   class="btn btn-info btn-sm">
+                                                    <i class="fas fa-check-circle"></i> Complete
+                                                </a>
+                                                <a href="{{ url_for('handle_request', request_id=request.id, action='delete') }}" 
+                                                   class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                            {% elif request.status == 'completed' %}
+                                            <div class="btn-group" role="group">
+                                                <span class="badge bg-info me-2">{{ request.status.title() }}</span>
+                                                <a href="{{ url_for('rate_user', swap_request_id=request.id) }}" 
+                                                   class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-star"></i> Rate
+                                                </a>
+                                                <a href="{{ url_for('handle_request', request_id=request.id, action='delete') }}" 
+                                                   class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                            {% else %}
+                                            <span class="badge bg-{{ 'success' if request.status == 'accepted' else 'danger' }} me-2">
+                                                {{ request.status.title() }}
+                                            </span>
+                                            <a href="{{ url_for('handle_request', request_id=request.id, action='delete') }}" 
+                                               class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                                <h4 class="text-muted">No received requests</h4>
+                                <p class="text-muted">You haven't received any swap requests yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sent Requests -->
+                <div class="tab-pane fade" id="sent" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body">
+                            {% if sent_requests %}
+                                {% for request in sent_requests %}
+                                <div class="request-item {% if not loop.last %}border-bottom{% endif %} pb-3 {% if not loop.first %}pt-3{% endif %}">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-start">
+                                                <div class="me-3">
+                                                    <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">
+                                                        <a href="{{ url_for('view_profile', user_id=request.requested_user.id) }}" 
+                                                           class="text-decoration-none">
+                                                            {{ request.requested_user.full_name }}
+                                                        </a>
+                                                        <small class="text-muted">(@{{ request.requested_user.username }})</small>
+                                                    </h6>
+                                                    <p class="mb-2">
+                                                        <span class="badge bg-primary me-2">{{ request.offered_skill }}</span>
+                                                        <i class="fas fa-exchange-alt text-muted"></i>
+                                                        <span class="badge bg-info ms-2">{{ request.requested_skill }}</span>
+                                                    </p>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        {{ request.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            {% if request.status == 'completed' %}
+                                            <div class="btn-group" role="group">
+                                                <span class="badge bg-info me-2">{{ request.status.title() }}</span>
+                                                <a href="{{ url_for('rate_user', swap_request_id=request.id) }}" 
+                                                   class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-star"></i> Rate
+                                                </a>
+                                                <a href="{{ url_for('delete_sent_request', request_id=request.id) }}" 
+                                                   class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                            {% else %}
+                                            <span class="badge bg-{{ 'warning' if request.status == 'pending' else 'success' if request.status == 'accepted' else 'danger' }} me-2">
+                                                {{ request.status.title() }}
+                                            </span>
+                                            <a href="{{ url_for('delete_sent_request', request_id=request.id) }}" 
+                                               class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-paper-plane fa-4x text-muted mb-3"></i>
+                                <h4 class="text-muted">No sent requests</h4>
+                                <p class="text-muted">You haven't sent any swap requests yet.</p>
+                                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                                    <i class="fas fa-search me-2"></i>Find People to Connect With
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

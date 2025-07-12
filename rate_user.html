@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Rate User - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Rate Your Experience
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="avatar-circle large mx-auto mb-3">
+                            {{ rated_user.full_name[:2].upper() }}
+                        </div>
+                        <h4>{{ rated_user.full_name }}</h4>
+                        <p class="text-muted">@{{ rated_user.username }}</p>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">You offered:</h6>
+                                    <p class="mb-0"><strong>{{ swap_request.offered_skill }}</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-muted">You learned:</h6>
+                                    <p class="mb-0"><strong>{{ swap_request.requested_skill }}</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label class="form-label">How would you rate this experience?</label>
+                            <div class="rating-input text-center">
+                                {% for i in range(1, 6) %}
+                                    <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" class="d-none" required>
+                                    <label for="star{{ i }}" class="star-label">
+                                        <i class="fas fa-star"></i>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            <div class="text-center mt-2">
+                                <small class="text-muted">Click on the stars to rate</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="feedback" class="form-label">Feedback (Optional)</label>
+                            <textarea class="form-control" id="feedback" name="feedback" rows="4" 
+                                      placeholder="Share your experience with this skill swap..."></textarea>
+                            <div class="form-text">Help others by sharing what you learned or how helpful {{ rated_user.full_name }} was.</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('swap_requests') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Requests
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Rating
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-input {
+    font-size: 2rem;
+}
+
+.star-label {
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.star-label:hover,
+.star-label:hover ~ .star-label {
+    color: #ffc107;
+}
+
+input[type="radio"]:checked ~ .star-label {
+    color: #ffc107;
+}
+
+input[type="radio"]:checked + .star-label {
+    color: #ffc107;
+}
+
+.rating-input input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+
+.rating-input label {
+    margin: 0 0.25rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star-label');
+    const radios = document.querySelectorAll('input[name="rating"]');
+    
+    stars.forEach((star, index) => {
+        star.addEventListener('click', function() {
+            radios[index].checked = true;
+            updateStars(index + 1);
+        });
+        
+        star.addEventListener('mouseenter', function() {
+            updateStars(index + 1, true);
+        });
+    });
+    
+    document.querySelector('.rating-input').addEventListener('mouseleave', function() {
+        const checkedIndex = Array.from(radios).findIndex(radio => radio.checked);
+        updateStars(checkedIndex + 1);
+    });
+    
+    function updateStars(rating, isHover = false) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#ffc107';
+            } else {
+                star.style.color = '#ddd';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

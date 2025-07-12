@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Swap Management - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-6">
+                    <i class="fas fa-exchange-alt me-2"></i>Swap Management
+                </h1>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('admin_swaps', status='all') }}" 
+                   class="btn btn-{{ 'primary' if status_filter == 'all' else 'outline-primary' }}">
+                    All Swaps
+                </a>
+                <a href="{{ url_for('admin_swaps', status='pending') }}" 
+                   class="btn btn-{{ 'warning' if status_filter == 'pending' else 'outline-warning' }}">
+                    Pending
+                </a>
+                <a href="{{ url_for('admin_swaps', status='accepted') }}" 
+                   class="btn btn-{{ 'success' if status_filter == 'accepted' else 'outline-success' }}">
+                    Accepted
+                </a>
+                <a href="{{ url_for('admin_swaps', status='rejected') }}" 
+                   class="btn btn-{{ 'danger' if status_filter == 'rejected' else 'outline-danger' }}">
+                    Rejected
+                </a>
+                <a href="{{ url_for('admin_swaps', status='completed') }}" 
+                   class="btn btn-{{ 'info' if status_filter == 'completed' else 'outline-info' }}">
+                    Completed
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if swaps %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Requester</th>
+                                        <th>Requested User</th>
+                                        <th>Skills Exchange</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for swap in swaps %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle me-3">
+                                                    {{ swap.requester.full_name[:2].upper() }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ swap.requester.full_name }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">@{{ swap.requester.username }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle me-3">
+                                                    {{ swap.requested_user.full_name[:2].upper() }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ swap.requested_user.full_name }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">@{{ swap.requested_user.username }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="skills-exchange">
+                                                <div class="mb-1">
+                                                    <strong>Offers:</strong>
+                                                    <span class="badge bg-primary">{{ swap.offered_skill }}</span>
+                                                </div>
+                                                <div>
+                                                    <strong>Wants:</strong>
+                                                    <span class="badge bg-secondary">{{ swap.requested_skill }}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if swap.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif swap.status == 'accepted' %}
+                                                <span class="badge bg-success">Accepted</span>
+                                            {% elif swap.status == 'rejected' %}
+                                                <span class="badge bg-danger">Rejected</span>
+                                            {% elif swap.status == 'completed' %}
+                                                <span class="badge bg-info">Completed</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ swap.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>{{ swap.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-exchange-alt fa-3x text-muted mb-3"></i>
+                            <h3>No swaps found</h3>
+                            <p class="text-muted">
+                                {% if status_filter == 'all' %}
+                                    No skill swap requests have been made yet.
+                                {% else %}
+                                    No {{ status_filter }} swap requests found.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
